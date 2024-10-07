@@ -1,16 +1,17 @@
 const adminService = require("../services/adminServices");
 const User = require("../models/user"); // Import the User model
+const { Role, Status } = require("../utils/constant");
 
 const getAllOrdersForAdmin = async (req, res) => {
   console.log("req received in the backend to see all orders");
   const adminId = req.user.userId;
+  console.log(adminId);
 
   if (!adminId) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
   try {
-    console.log("Inside Try Block");
     const ordersByUser = await adminService.getAllOrdersForAdmin(adminId);
     return res.status(200).json(ordersByUser);
   } catch (error) {
@@ -28,7 +29,7 @@ const updateOrderStatus = async (req, res) => {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 
-  const validStatuses = ["new", "shipped", "fulfilled"];
+  const validStatuses = [Status.NEW, Status.SHIPPED, Status.FULFILLED];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({
       success: false,
@@ -64,7 +65,8 @@ const getOrderSummary = async (req, res) => {
 
   // Verify that the user is an admin
   const adminUser = await User.findById(adminId);
-  if (!adminUser || adminUser.role !== "admin") {
+  console.log(adminId);
+  if (!adminUser || adminUser.role !== Role.ADMIN) {
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
 

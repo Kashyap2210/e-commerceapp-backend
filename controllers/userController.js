@@ -1,6 +1,7 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const userService = require("../services/userServices");
+const { Role } = require("../utils/constant");
 
 module.exports.role = async (req, res) => {
   console.log("Request received in the backend for role");
@@ -8,7 +9,8 @@ module.exports.role = async (req, res) => {
   const { name } = req.body;
 
   // Validate role name
-  if (!["user", "admin"].includes(name)) {
+  console.log([Role.USER, Role.ADMIN]);
+  if (![Role.USER, Role.ADMIN].includes(name)) {
     return res.status(400).json({
       success: false,
       message: `Role ${name} is invalid`,

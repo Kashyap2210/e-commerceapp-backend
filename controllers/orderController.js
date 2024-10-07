@@ -1,4 +1,5 @@
 const orderService = require("../services/orderServices");
+const { Role, Status } = require("../utils/constant");
 
 const placeOrder = async (req, res) => {
   console.log("req to place order received in the backend");
@@ -20,6 +21,7 @@ const placeOrder = async (req, res) => {
       message: "product_name must be between 3 to 10 characters.",
     });
   }
+
   if (product_price < 100 || product_price > 1000) {
     return res.status(400).json({
       success: false,
@@ -64,7 +66,7 @@ const getUserOrders = async (req, res) => {
       product_name: order.product_name,
       product_price: order.product_price,
       quantity: order.product_quantity,
-      status: "new",
+      status: Status.NEW,
     }));
 
     return res.status(200).json(orders);

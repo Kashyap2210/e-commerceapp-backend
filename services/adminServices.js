@@ -1,10 +1,12 @@
 const Order = require("../models/order"); // Import the Order model
 const User = require("../models/user"); // Import the User model
+const { Role } = require("../utils/constant");
 
 // Service to get all orders for admin and group by user
 const getAllOrdersForAdmin = async (adminId) => {
+  console.log(adminId);
   const adminUser = await User.findById(adminId);
-  if (!adminUser || adminUser.role !== "admin") {
+  if (!adminUser || adminUser.role !== Role.ADMIN) {
     throw new Error("Forbidden"); // Throw an error if the user is not an admin
   }
 
@@ -34,7 +36,7 @@ const getAllOrdersForAdmin = async (adminId) => {
 const updateOrderStatus = async (adminId, orderId, status) => {
   // Check if the admin is valid
   const adminUser = await User.findById(adminId);
-  if (!adminUser || adminUser.role !== "admin") {
+  if (!adminUser || adminUser.role !== Role.ADMIN) {
     throw new Error("Forbidden");
   }
 
