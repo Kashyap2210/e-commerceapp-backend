@@ -11,6 +11,7 @@ const Order = require("./models/order.js");
 const User = require("./models/user.js");
 const isLoggedIn = require("./isLoggedIn.js");
 const userRoutes = require("./routes/userRoutes.js");
+const orderRoutes = require("./routes/orderRoutes.js");
 
 // const port = 3000;
 
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/user", userRoutes);
+app.use("/order", orderRoutes);
 
 app.post("/order", isLoggedIn, async (req, res) => {
   console.log("req to place order recieved in the backend");
@@ -78,7 +80,7 @@ app.post("/order", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/orders", isLoggedIn, async (req, res) => {
+app.get("/order", isLoggedIn, async (req, res) => {
   console.log("request to view orders recieved in the backend");
   //   const userId = req.user.userId;
   try {
@@ -102,7 +104,7 @@ app.get("/orders", isLoggedIn, async (req, res) => {
   }
 });
 
-app.get("/admin/orders", isLoggedIn, async (req, res) => {
+app.get("/admin/order", isLoggedIn, async (req, res) => {
   console.log("req recieved in the backend to see all orders");
   const adminId = req.user.userId;
 
