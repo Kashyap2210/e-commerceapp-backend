@@ -4,8 +4,7 @@ const orderSchema = new mongoose.Schema({
   product_name: {
     type: String,
     required: true,
-    minlength: 3,
-    maxlength: 10,
+
   },
   product_price: {
     type: Number,
@@ -16,8 +15,7 @@ const orderSchema = new mongoose.Schema({
   product_quantity: {
     type: Number,
     required: true,
-    min: 1, // Minimum quantity of 1
-    max: 10, // Maximum quantity of 10
+
   },
   userId: {
     type: String,

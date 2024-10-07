@@ -7,9 +7,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const Role = require("./models/role.js");
+const Order = require("./models/order.js");
+const User = require("./models/user.js");
 const isLoggedIn = require("./isLoggedIn.js");
 
-const port = 3000;
+app.use(express.json());
+
+// const port = 3000;
 
 main().catch((err) => console.log(err));
 
@@ -20,6 +24,7 @@ async function main() {
 }
 
 app.post("/role", async (req, res) => {
+  console.log("request recieved in the backend for role");
   const { name } = req.body;
 
   // Check if role already exists
@@ -62,6 +67,30 @@ app.post("/signup", async (req, res) => {
       message: "All parameters (username, password, role) are required",
     });
   }
+
+  if (password.length < 8) {
+    return res.status(400).json({
+      success: "false",
+      message: "Password should be more than 8 Characters",
+    });
+  }
+
+  if (password.length > 15) {
+    return res.status(400).json({
+      success: "false",
+      message: "Password should be less than 15 Characters",
+    });
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
+  if (!passwordRegex.test(password)) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
+    });
+  }
+
   try {
     // Checking if the user already exists
     const existingUser = await User.findOne({ username });
@@ -221,7 +250,10 @@ app.get("/orders", isLoggedIn, async (req, res) => {
 });
 
 app.get("/admin/orders", isLoggedIn, async (req, res) => {
+  console.log("req recieved in the backend to see all orders");
   const adminId = req.user.userId;
+
+  console.log(adminId);
 
   //   If JWT token does not exists
   if (!adminId) {
@@ -229,7 +261,9 @@ app.get("/admin/orders", isLoggedIn, async (req, res) => {
   }
 
   try {
-    const isAdmin = await User.findById({ adminId });
+    console.log("Inside Try Block");
+    const adminUser = await User.findById(adminId);
+    console.log(adminUser);
     if (!adminUser || adminUser.role !== "admin") {
       return res.status(401).json({ success: false, message: "Forbidden" });
     }
@@ -263,7 +297,7 @@ app.get("/admin/orders", isLoggedIn, async (req, res) => {
   } catch (error) {}
 });
 
-app.put("/admin/orders/:orderId", isLoggedIn, async (req, res) => {
+app.put("/admin/order/:orderId", isLoggedIn, async (req, res) => {
   const adminId = req.user.userId;
   const orderIdForStatusChange = req.params.orderId;
   const { status } = req.body;
@@ -347,6 +381,6 @@ app.get("/admin/orders/summary", isLoggedIn, async (req, res) => {
   }
 });
 
-app.listen(port, (req, res) => {
+app.listen(3000, () => {
   console.log("server is listening");
 });
