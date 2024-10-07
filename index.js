@@ -10,8 +10,7 @@ const Role = require("./models/role.js");
 const Order = require("./models/order.js");
 const User = require("./models/user.js");
 const isLoggedIn = require("./isLoggedIn.js");
-
-app.use(express.json());
+const userRoutes = require("./routes/userRoutes.js");
 
 // const port = 3000;
 
@@ -23,156 +22,10 @@ async function main() {
   // use `await mongoose.connect('mongodb://user:password@127.0.0.1:27017/test');` if your database has auth enabled
 }
 
-app.post("/role", async (req, res) => {
-  console.log("request recieved in the backend for role");
-  const { name } = req.body;
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  // Check if role already exists
-  if (!["user", "admin"].includes(name)) {
-    return res.status(400).json({
-      success: false,
-      message: `Role ${name} is invalid`,
-    });
-  }
-
-  try {
-    const existingRole = await Role.findOne({ name });
-    if (existingRole) {
-      return res.status(400).json({
-        success: "false",
-        message: `Role with ${name} is already present. `,
-      });
-    }
-    const role = new Role({ name });
-    await role.save();
-
-    return res.status(201).json({
-      success: true,
-      message: "Role created successfully",
-      id: role._id,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.post("/signup", async (req, res) => {
-  const { username, password, role } = req.body;
-
-  // Basic request validation
-  if (!username || !password || !role) {
-    return res.status(400).json({
-      success: false,
-      message: "All parameters (username, password, role) are required",
-    });
-  }
-
-  if (password.length < 8) {
-    return res.status(400).json({
-      success: "false",
-      message: "Password should be more than 8 Characters",
-    });
-  }
-
-  if (password.length > 15) {
-    return res.status(400).json({
-      success: "false",
-      message: "Password should be less than 15 Characters",
-    });
-  }
-
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
-  if (!passwordRegex.test(password)) {
-    return res.status(400).json({
-      success: false,
-      message:
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
-    });
-  }
-
-  try {
-    // Checking if the user already exists
-    const existingUser = await User.findOne({ username });
-    if (existingUser) {
-      res.status(400).json({
-        success: "false",
-        message: `Username ${username} is already present`,
-      });
-    }
-    // Create a new user
-
-    const hashedPassword = await bcrypt.hash(password, 10); // Salt rounds = 10
-
-    const newUser = new User({ username, password: hashedPassword, role });
-    await newUser.save();
-    return res.status(201).json({
-      success: true,
-      message: "user created",
-    });
-  } catch (error) {
-    // Custom handling for Mongoose validation errors
-    if (error.name === "ValidationError") {
-      const field = Object.keys(error.errors)[0];
-      console.log(field);
-      const errorMessage = error.errors[field].message;
-      console.log(errorMessage);
-
-      return res.status(400).json({
-        success: false,
-        message: `${field} must be ${errorMessage}`,
-      });
-    }
-    // General server error handling
-    console.error(error);
-    res.status(500).json({ success: false, message: "Server error" });
-  }
-});
-
-app.post("/login", async (req, res) => {
-  console.log("login req recieved in the backend");
-  const { username, password } = req.body;
-  // Basic request validation
-  if (!username || !password) {
-    return res.status(400).json({
-      success: false,
-      message: "Username/Password is required",
-    });
-  }
-  try {
-    if (username && password) {
-      const userToBeLoggedIn = await User.findOne({ username });
-      if (!userToBeLoggedIn) {
-        res.status(400).json({
-          success: false,
-          message: "User not found",
-        });
-      }
-
-      const isPasswordValid = await bcrypt.compare(
-        password,
-        userToBeLoggedIn.password
-      );
-      if (!isPasswordValid) {
-        return res.status(400).json({
-          success: false,
-          message: "Password is invalid",
-        });
-      }
-
-      const payload = {
-        userId: userToBeLoggedIn._id, //  accessing userId
-      };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "1h", // Token expiration time
-      });
-      return res.status(200).json({ success: true, token });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-});
+app.use("/user", userRoutes);
 
 app.post("/order", isLoggedIn, async (req, res) => {
   console.log("req to place order recieved in the backend");
